@@ -8,4 +8,11 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone',
   }),
+  vite: {
+    ssr: {
+      // Bundle the client so Node ESM doesn't need to resolve its internal imports.
+      // This also protects starters pinned to older versions.
+      noExternal: ['@codewheel/jsonapi-frontend-client'],
+    },
+  },
 });

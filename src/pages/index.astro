@@ -1,11 +1,10 @@
 ---
 import EntityRenderer from "../components/EntityRenderer.astro"
 import ViewRenderer from "../components/ViewRenderer.astro"
-import { getDeploymentMode, getDrupalBaseUrl, loadDrupalRoute } from "../lib/drupal"
+import { getDeploymentMode, loadDrupalRoute } from "../lib/drupal"
 
 const path = "/"
 const deploymentMode = getDeploymentMode()
-const drupalBaseUrl = getDrupalBaseUrl()
 const proxySecret = import.meta.env.DRUPAL_PROXY_SECRET
 
 const result = await loadDrupalRoute(path)
@@ -13,13 +12,19 @@ const result = await loadDrupalRoute(path)
 if (result.resolved.resolved && !result.resolved.headless) {
 	// Split routing: send the user back to Drupal on the same public domain.
 	if (deploymentMode === "split_routing") {
-		return Astro.redirect(result.resolved.drupal_url ?? `${drupalBaseUrl}${path}`, 302)
+		if (result.resolved.drupal_url) {
+			return Astro.redirect(result.resolved.drupal_url, 302)
+		}
+		Astro.response.status = 404
 	}
 
 	// Frontend-first: the middleware should proxy non-headless requests.
 	// If origin protection is disabled, fall back to a direct redirect.
 	if (!proxySecret) {
-		return Astro.redirect(`${drupalBaseUrl}${path}`, 302)
+		if (result.resolved.drupal_url) {
+			return Astro.redirect(result.resolved.drupal_url, 302)
+		}
+		Astro.response.status = 404
 	}
 
 	Astro.response.status = 404
@@ -39,7 +44,7 @@ if (!result.resolved.resolved) {
 		<title>{result.title ?? "Drupal"}</title>
 	</head>
 	<body>
-		{result.kind === "entity" && result.doc ? (
+		{result.kind === "entity" && result.doc && !Array.isArray(result.doc.data) ? (
 			<EntityRenderer entity={result.doc.data} included={result.doc.included} />
 		) : result.kind === "view" && result.doc ? (
 			<ViewRenderer doc={result.doc} />
