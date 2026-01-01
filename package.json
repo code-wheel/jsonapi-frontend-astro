@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@astrojs/node": "^9.4.4",
-    "@codewheel/jsonapi-frontend-client": "^1.0.3",
+    "@codewheel/jsonapi-frontend-client": "^1.0.4",
     "astro": "^5.16.6",
     "isomorphic-dompurify": "^2.0.0"
   },

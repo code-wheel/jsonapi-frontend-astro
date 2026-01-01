@@ -108,7 +108,14 @@ This starter runs in SSR mode by default (so it can support `nextjs_first` proxy
 - SSG works best with `split_routing` (static sites can’t proxy Drupal HTML).
 - Generate a route list from either:
   - JSON:API collection endpoints (e.g. list `path.alias` from `/jsonapi/node/page?filter[status]=1&fields[node--page]=path`), or
+  - the built-in routes feed (`/jsonapi/routes`) (recommended), or
   - a single Views “routes feed” exposed via `jsonapi_views`.
+
+Built-in routes feed example:
+
+```bash
+curl -H "X-Routes-Secret: $ROUTES_FEED_SECRET" "https://cms.example.com/jsonapi/routes?_format=json&page[limit]=50"
+```
 
 Example `getStaticPaths()` (pre-render pages from `node--page`):
 
