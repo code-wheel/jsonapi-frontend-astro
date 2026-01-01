@@ -11,11 +11,30 @@ const proxySecret = import.meta.env.DRUPAL_PROXY_SECRET
 
 const result = await loadDrupalRoute(path)
 
+function getSafeDrupalRedirectUrl(input: string | null): string | null {
+	if (!input) return null
+
+	let allowedOrigin: string
+	try {
+		allowedOrigin = new URL(import.meta.env.DRUPAL_BASE_URL).origin
+	} catch {
+		return null
+	}
+
+	try {
+		const target = new URL(input, allowedOrigin)
+		return target.origin === allowedOrigin ? target.toString() : null
+	} catch {
+		return null
+	}
+}
+
 if (result.resolved.resolved && !result.resolved.headless) {
 	// Split routing: send the user back to Drupal on the same public domain.
 	if (deploymentMode === "split_routing") {
-		if (result.resolved.drupal_url) {
-			return Astro.redirect(result.resolved.drupal_url, 302)
+		const safe = getSafeDrupalRedirectUrl(result.resolved.drupal_url)
+		if (safe) {
+			return Astro.redirect(safe, 302)
 		}
 		Astro.response.status = 404
 	}
@@ -23,8 +42,9 @@ if (result.resolved.resolved && !result.resolved.headless) {
 	// Frontend-first: the middleware should proxy non-headless requests.
 	// If origin protection is disabled, fall back to a direct redirect.
 	if (!proxySecret) {
-		if (result.resolved.drupal_url) {
-			return Astro.redirect(result.resolved.drupal_url, 302)
+		const safe = getSafeDrupalRedirectUrl(result.resolved.drupal_url)
+		if (safe) {
+			return Astro.redirect(safe, 302)
 		}
 		Astro.response.status = 404
 	}

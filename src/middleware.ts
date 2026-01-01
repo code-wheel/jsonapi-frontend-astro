@@ -85,14 +85,28 @@ function rewriteLocationHeader(location: string, drupalOrigin: string, frontendO
   }
 }
 
+function buildSafeDrupalTargetUrl(requestUrl: URL, drupalOriginUrl: URL): URL {
+  const path = requestUrl.pathname
+  if (!path.startsWith("/") || path.startsWith("//") || path.includes("\\") || path.includes("\0")) {
+    throw new Error("Invalid request path")
+  }
+
+  const targetUrl = new URL(drupalOriginUrl.origin)
+  targetUrl.pathname = path
+  targetUrl.search = requestUrl.search
+
+  if (targetUrl.origin !== drupalOriginUrl.origin) {
+    throw new Error("Refusing to proxy to unexpected origin")
+  }
+
+  return targetUrl
+}
+
 async function proxyToDrupal(context: { request: Request; url: URL }): Promise<Response> {
   const drupalOrigin = getDrupalOriginUrl()
   const drupalOriginUrl = new URL(drupalOrigin)
 
-  // Build the target URL safely (avoid SSRF via user-controlled absolute URLs).
-  const targetUrl = new URL(drupalOriginUrl.toString())
-  targetUrl.pathname = context.url.pathname
-  targetUrl.search = context.url.search
+  const targetUrl = buildSafeDrupalTargetUrl(context.url, drupalOriginUrl)
 
   const headers = new Headers()
   for (const headerName of FORWARD_REQUEST_HEADERS) {
@@ -123,7 +137,7 @@ async function proxyToDrupal(context: { request: Request; url: URL }): Promise<R
     new Headers(authHeaders).forEach((value, key) => headers.set(key, value))
   }
 
-  const upstream = await fetch(targetUrl.toString(), {
+  const upstream = await fetch(targetUrl, {
     method: context.request.method,
     headers,
     body: context.request.method !== "GET" && context.request.method !== "HEAD" ? context.request.body : undefined,
@@ -194,4 +208,3 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   return next()
 })
-
