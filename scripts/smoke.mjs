@@ -41,7 +41,9 @@ async function waitForHttpOk(url, timeoutMs = 15000) {
 async function startAstroServer(port, env) {
   const child = spawn(process.execPath, ["dist/server/entry.mjs"], {
     stdio: "inherit",
-    env: { ...process.env, PORT: String(port), ...env },
+    // Astro standalone server binds to HOST (defaults to "localhost", which can be IPv6-only in CI).
+    // Force IPv4 so our smoke requests to 127.0.0.1 always work.
+    env: { ...process.env, HOST: "127.0.0.1", PORT: String(port), ...env },
   })
   await waitForHttpOk(`http://127.0.0.1:${port}/`)
   return child
