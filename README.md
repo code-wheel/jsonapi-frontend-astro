@@ -52,6 +52,25 @@ Fetch: GET {DRUPAL_BASE_URL}/jsonapi/node/page/... (server-side)
 Render (Astro SSR): /src/pages/[...slug].astro
 ```
 
+## Minimal integration (without this starter)
+
+If you prefer wiring this into an existing Astro project, the core loop is:
+
+```ts
+import { resolvePath, fetchJsonApi, fetchView } from "@codewheel/jsonapi-frontend-client"
+
+const baseUrl = import.meta.env.DRUPAL_BASE_URL
+const resolved = await resolvePath("/about-us", { baseUrl })
+
+if (resolved.resolved && resolved.kind === "entity" && resolved.jsonapi_url) {
+  const doc = await fetchJsonApi(resolved.jsonapi_url, { baseUrl })
+}
+
+if (resolved.resolved && resolved.kind === "view" && resolved.data_url) {
+  const doc = await fetchView(resolved.data_url, { baseUrl })
+}
+```
+
 ## Deployment modes
 
 ### Split routing (default)
@@ -82,10 +101,20 @@ DRUPAL_PROXY_SECRET=your-secret-from-drupal-admin
 
 In this mode, access Drupal admin directly on the origin domain (e.g. `https://cms.example.com/admin`).
 
+## Static builds (SSG) (optional)
+
+This starter runs in SSR mode by default (so it can support `nextjs_first` proxying). If you want Astro’s default static output (SSG), you still use `/jsonapi/resolve` for correctness — the missing piece is a build-time list of paths.
+
+- SSG works best with `split_routing` (static sites can’t proxy Drupal HTML).
+- Generate a route list from either:
+  - JSON:API collection endpoints (e.g. list `path.alias` from `/jsonapi/node/page?filter[status]=1&fields[node--page]=path`), or
+  - a single Views “routes feed” exposed via `jsonapi_views`.
+
+See the Migration Guide for details: https://www.drupal.org/docs/contributed-modules/jsonapi-frontend/migration-guide
+
 ## Credentials (optional)
 
 If your Drupal JSON:API requires auth, set one of these in `.env` (server-side only):
 
 - `DRUPAL_BASIC_USERNAME` + `DRUPAL_BASIC_PASSWORD`
 - `DRUPAL_JWT_TOKEN`
-
