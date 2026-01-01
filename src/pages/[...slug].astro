@@ -29,6 +29,10 @@ function getSafeDrupalRedirectUrl(input: string | null): string | null {
 	}
 }
 
+if (result.resolved.redirect) {
+	return Astro.redirect(result.resolved.redirect.to, result.resolved.redirect.status ?? 302)
+}
+
 if (result.resolved.resolved && !result.resolved.headless) {
 	// Split routing: send the user back to Drupal on the same public domain.
 	if (deploymentMode === "split_routing") {

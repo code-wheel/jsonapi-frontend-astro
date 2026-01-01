@@ -16,6 +16,12 @@ type LoadedRoute =
       title: null
     }
   | {
+      kind: "redirect"
+      resolved: ResolveResponse
+      doc: null
+      title: null
+    }
+  | {
       kind: "entity" | "view"
       resolved: ResolveResponse
       doc: JsonApiDocument
@@ -63,6 +69,15 @@ function getDrupalAuthHeaders(): HeadersInit | undefined {
   return undefined
 }
 
+function getDrupalProxyHeaders(): HeadersInit | undefined {
+  const proxySecret = import.meta.env.DRUPAL_PROXY_SECRET
+  if (proxySecret && typeof proxySecret === "string" && proxySecret.trim() !== "") {
+    return { "X-Proxy-Secret": proxySecret.trim() }
+  }
+
+  return undefined
+}
+
 function guessTitle(doc: JsonApiDocument | null): string | null {
   if (!doc) return null
 
@@ -83,12 +98,19 @@ function guessTitle(doc: JsonApiDocument | null): string | null {
 
 export async function loadDrupalRoute(path: string): Promise<LoadedRoute> {
   const baseUrl = getDrupalBaseUrl()
-  const headers = getDrupalAuthHeaders()
+  const authHeaders = getDrupalAuthHeaders()
+  const proxyHeaders = getDrupalProxyHeaders()
+  const headers =
+    authHeaders || proxyHeaders ? { ...(authHeaders ?? {}), ...(proxyHeaders ?? {}) } : undefined
 
   const resolved = await resolvePath(path, { baseUrl, headers })
 
   if (!resolved.resolved) {
     return { kind: "not_found", resolved, doc: null, title: null }
+  }
+
+  if (resolved.redirect) {
+    return { kind: "redirect", resolved, doc: null, title: null }
   }
 
   if (resolved.kind === "entity" && resolved.jsonapi_url) {
@@ -103,4 +125,3 @@ export async function loadDrupalRoute(path: string): Promise<LoadedRoute> {
 
   return { kind: "not_found", resolved, doc: null, title: null }
 }
-
