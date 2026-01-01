@@ -110,6 +110,37 @@ This starter runs in SSR mode by default (so it can support `nextjs_first` proxy
   - JSON:API collection endpoints (e.g. list `path.alias` from `/jsonapi/node/page?filter[status]=1&fields[node--page]=path`), or
   - a single Views “routes feed” exposed via `jsonapi_views`.
 
+Example `getStaticPaths()` (pre-render pages from `node--page`):
+
+```astro
+---
+import { loadDrupalRoute } from "../lib/drupal"
+
+export async function getStaticPaths() {
+  const baseUrl = import.meta.env.DRUPAL_BASE_URL
+  const url = new URL("/jsonapi/node/page", baseUrl)
+  url.searchParams.set("filter[status]", "1")
+  url.searchParams.set("fields[node--page]", "path")
+  url.searchParams.set("page[limit]", "50")
+
+  const doc = await fetch(url).then((r) => r.json())
+  const paths = (doc.data ?? [])
+    .map((node) => node?.attributes?.path?.alias)
+    .filter((p) => typeof p === "string" && p.startsWith("/"))
+
+  return paths.map((p) => ({
+    params: { slug: p.split("/").filter(Boolean) },
+    props: { path: p },
+  }))
+}
+
+const { path } = Astro.props
+const result = await loadDrupalRoute(path)
+---
+```
+
+If you have a lot of content, paginate using JSON:API `links.next` (or `page[offset]`/`page[limit]`).
+
 See the Migration Guide for details: https://www.drupal.org/docs/contributed-modules/jsonapi-frontend/migration-guide
 
 ## Credentials (optional)
