@@ -1,43 +1,91 @@
-# Astro Starter Kit: Minimal
+# jsonapi-frontend-astro
 
-```sh
-npm create astro@latest -- --template minimal
+Astro starter template for Drupal JSON:API with [`jsonapi_frontend`](https://www.drupal.org/project/jsonapi_frontend).
+
+## Quick start
+
+1) Install dependencies
+
+```bash
+npm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+2) Configure Drupal URL
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+cp .env.example .env
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Edit `.env`:
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+```env
+DRUPAL_BASE_URL=https://your-drupal-origin.com
+```
 
-Any static assets, like images, can be placed in the `public/` directory.
+3) Start developing
 
-## 🧞 Commands
+```bash
+npm run dev
+```
 
-All commands are run from the root of the project, from a terminal:
+Open `http://localhost:4321` and navigate to any path that exists in Drupal.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Requirements
 
-## 👀 Want to learn more?
+- Node.js 20+
+- A Drupal 10+ site with:
+  - `drupal/jsonapi_frontend` enabled
+  - Core `jsonapi` enabled
+  - `jsonapi_views` (optional, for Views support)
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## How it works
+
+```
+Request: /about-us
+  ↓
+Resolver: GET {DRUPAL_BASE_URL}/jsonapi/resolve?path=/about-us&_format=json
+  ↓
+Response: { kind: "entity", jsonapi_url: "/jsonapi/node/page/...", headless: true }
+  ↓
+Fetch: GET {DRUPAL_BASE_URL}/jsonapi/node/page/... (server-side)
+  ↓
+Render (Astro SSR): /src/pages/[...slug].astro
+```
+
+## Deployment modes
+
+### Split routing (default)
+
+- Drupal stays on your main domain.
+- Your router/CDN sends selected paths to Astro.
+
+```env
+DEPLOYMENT_MODE=split_routing
+DRUPAL_BASE_URL=https://www.example.com
+```
+
+### Frontend-first (`nextjs_first`)
+
+- Astro handles all traffic on the main domain.
+- Drupal runs on an origin/subdomain (e.g. `https://cms.example.com`).
+- `src/middleware.ts` proxies:
+  - Drupal assets (`/sites`, `/core`, etc.)
+  - `/jsonapi/*` (so the API can live behind the same public domain)
+  - any non-headless paths (based on `/jsonapi/resolve`)
+
+```env
+DEPLOYMENT_MODE=nextjs_first
+DRUPAL_BASE_URL=https://cms.example.com
+DRUPAL_ORIGIN_URL=https://cms.example.com
+DRUPAL_PROXY_SECRET=your-secret-from-drupal-admin
+```
+
+In this mode, access Drupal admin directly on the origin domain (e.g. `https://cms.example.com/admin`).
+
+## Credentials (optional)
+
+If your Drupal JSON:API requires auth, set one of these in `.env` (server-side only):
+
+- `DRUPAL_BASIC_USERNAME` + `DRUPAL_BASIC_PASSWORD`
+- `DRUPAL_JWT_TOKEN`
+

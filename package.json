@@ -1,7 +1,13 @@
 {
-  "name": "home-wavecutter-ideaprojects-jsonapi-frontend-astro",
+  "name": "jsonapi-frontend-astro",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "description": "Astro starter for Drupal JSON:API with jsonapi_frontend",
+  "license": "GPL-2.0-or-later",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -9,6 +15,13 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.16.6"
+    "@astrojs/node": "^9.4.4",
+    "@codewheel/jsonapi-frontend-client": "^1.0.2",
+    "astro": "^5.16.6",
+    "isomorphic-dompurify": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/dompurify": "^3.0.0",
+    "typescript": "^5.0.0"
   }
 }

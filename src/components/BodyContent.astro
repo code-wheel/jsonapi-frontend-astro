@@ -1,0 +1,24 @@
+---
+import DOMPurify from "isomorphic-dompurify"
+
+interface Props {
+	html: string
+	/**
+	 * If your Drupal origin is hidden behind a proxy secret, you generally don’t
+	 * want to leak it in rendered HTML. Pass the Drupal host (e.g. `cms.example.com`)
+	 * to strip `https?://{host}` from `href`/`src` attributes after sanitizing.
+	 */
+	stripOriginHost?: string
+}
+
+const { html, stripOriginHost } = Astro.props
+
+let safe = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
+
+if (stripOriginHost) {
+	const escaped = stripOriginHost.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+	safe = safe.replace(new RegExp(`https?:\\\\/\\\\/${escaped}`, "g"), "")
+}
+---
+
+<div set:html={safe} />

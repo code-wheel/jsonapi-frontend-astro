@@ -1,0 +1,53 @@
+---
+import type { JsonApiResource } from "@codewheel/jsonapi-frontend-client"
+import BodyContent from "./BodyContent.astro"
+
+interface Props {
+	entity: JsonApiResource
+	included?: JsonApiResource[]
+}
+
+const { entity } = Astro.props
+const drupalOriginHost = (() => {
+	try {
+		return new URL(import.meta.env.DRUPAL_BASE_URL).host
+	} catch {
+		return undefined
+	}
+})()
+
+const attrs = (entity as unknown as { attributes?: Record<string, unknown> }).attributes ?? {}
+
+const title =
+	(typeof attrs.title === "string" && attrs.title) ||
+	(typeof attrs.name === "string" && attrs.name) ||
+	`${entity.type}`
+
+const bodyValue = (() => {
+	const body = attrs.body as { processed?: unknown; value?: unknown } | undefined
+	if (!body) return null
+	if (typeof body.processed === "string") return body.processed
+	if (typeof body.value === "string") return body.value
+	return null
+})()
+---
+
+<main style="max-width: 60rem; margin: 2rem auto; padding: 0 1rem; font-family: ui-sans-serif, system-ui;">
+	<header style="margin-bottom: 1.5rem;">
+		<p style="margin: 0; color: #555;">{entity.type}</p>
+		<h1 style="margin: 0.25rem 0 0;">{title}</h1>
+	</header>
+
+	{bodyValue ? (
+		<article>
+			<BodyContent html={bodyValue} stripOriginHost={drupalOriginHost} />
+		</article>
+	) : (
+		<p style="color: #555;">No body field found on this entity.</p>
+	)}
+
+	<details style="margin-top: 2rem;">
+		<summary>Raw JSON:API</summary>
+		<pre style="overflow:auto; padding: 1rem; background: #f6f6f6;">{JSON.stringify(entity, null, 2)}</pre>
+	</details>
+</main>

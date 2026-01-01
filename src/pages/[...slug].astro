@@ -3,7 +3,9 @@ import EntityRenderer from "../components/EntityRenderer.astro"
 import ViewRenderer from "../components/ViewRenderer.astro"
 import { getDeploymentMode, getDrupalBaseUrl, loadDrupalRoute } from "../lib/drupal"
 
-const path = "/"
+const slug = Astro.params.slug
+const path = slug ? `/${slug}` : "/"
+
 const deploymentMode = getDeploymentMode()
 const drupalBaseUrl = getDrupalBaseUrl()
 const proxySecret = import.meta.env.DRUPAL_PROXY_SECRET

@@ -1,0 +1,40 @@
+---
+import type { JsonApiDocument, JsonApiResource } from "@codewheel/jsonapi-frontend-client"
+
+interface Props {
+	doc: JsonApiDocument
+}
+
+const { doc } = Astro.props
+const data = (doc as unknown as { data?: unknown }).data
+const items: JsonApiResource[] = Array.isArray(data) ? (data as JsonApiResource[]) : data ? ([data] as JsonApiResource[]) : []
+
+function label(item: JsonApiResource): string {
+	const attrs = (item as unknown as { attributes?: Record<string, unknown> }).attributes
+	if (attrs && typeof attrs.title === "string" && attrs.title) return attrs.title
+	if (attrs && typeof attrs.name === "string" && attrs.name) return attrs.name
+	return `${item.type}`
+}
+---
+
+<main style="max-width: 60rem; margin: 2rem auto; padding: 0 1rem; font-family: ui-sans-serif, system-ui;">
+	<header style="margin-bottom: 1.5rem;">
+		<p style="margin: 0; color: #555;">jsonapi_views</p>
+		<h1 style="margin: 0.25rem 0 0;">View results</h1>
+	</header>
+
+	{items.length ? (
+		<ul>
+			{items.map((item) => (
+				<li>{label(item)}</li>
+			))}
+		</ul>
+	) : (
+		<p style="color: #555;">No results.</p>
+	)}
+
+	<details style="margin-top: 2rem;">
+		<summary>Raw JSON:API</summary>
+		<pre style="overflow:auto; padding: 1rem; background: #f6f6f6;">{JSON.stringify(doc, null, 2)}</pre>
+	</details>
+</main>
