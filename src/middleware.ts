@@ -8,6 +8,10 @@ const FRONTEND_ONLY_PATHS = ["/favicon.svg", "/favicon.ico", "/robots.txt", "/si
 // Drupal assets that should always be fetched from the Drupal origin in `nextjs_first`.
 const DRUPAL_ASSET_PREFIXES = ["/jsonapi", "/core", "/modules", "/themes", "/sites", "/libraries"]
 
+// Routes that should always be proxied to Drupal (including non-idempotent writes).
+// This keeps interactive Drupal pages (like Webforms) working in frontend-first mode.
+const DRUPAL_ALWAYS_PROXY_PREFIXES = ["/form", "/webform_rest"]
+
 function getDeploymentMode(): "split_routing" | "nextjs_first" {
   return import.meta.env.DEPLOYMENT_MODE === "nextjs_first" ? "nextjs_first" : "split_routing"
 }
@@ -183,6 +187,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Proxy assets without hitting the resolver.
   if (DRUPAL_ASSET_PREFIXES.some((p) => path.startsWith(p))) {
+    return proxyToDrupal(context)
+  }
+
+  // Proxy specific Drupal routes directly (e.g., Webform submissions).
+  if (DRUPAL_ALWAYS_PROXY_PREFIXES.some((p) => path.startsWith(p))) {
     return proxyToDrupal(context)
   }
 

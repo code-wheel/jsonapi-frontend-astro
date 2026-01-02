@@ -90,6 +90,7 @@ DRUPAL_BASE_URL=https://www.example.com
 - `src/middleware.ts` proxies:
   - Drupal assets (`/sites`, `/core`, etc.)
   - `/jsonapi/*` (so the API can live behind the same public domain)
+  - Webform routes like `/form/*` and `/webform_rest/*` (for interactive forms + submissions)
   - any non-headless paths (based on `/jsonapi/resolve`)
 
 ```env
@@ -100,6 +101,13 @@ DRUPAL_PROXY_SECRET=your-secret-from-drupal-admin
 ```
 
 In this mode, access Drupal admin directly on the origin domain (e.g. `https://cms.example.com/admin`).
+
+## Webforms (optional)
+
+Drupal Webform is usually best kept as a Drupal-rendered UI in hybrid headless setups:
+
+- **Split routing:** route `/form/*` to Drupal.
+- **Frontend-first:** this starter proxies `/form/*` and `/webform_rest/*` to Drupal (including POST submissions).
 
 ## Static builds (SSG) (optional)
 
