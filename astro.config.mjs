@@ -9,7 +9,7 @@ const isVercel = Boolean(process.env.VERCEL);
 export default defineConfig({
   output: 'server',
   adapter: isVercel
-    ? vercel()
+    ? vercel({})
     : node({
         mode: 'standalone',
       }),
