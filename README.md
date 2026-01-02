@@ -1,8 +1,23 @@
 # jsonapi-frontend-astro
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/code-wheel/jsonapi-frontend-astro&env=DRUPAL_BASE_URL&envDescription=Drupal%20origin%20URL%20(example%3A%20https%3A%2F%2Fcms.example.com)&envLink=https%3A%2F%2Fgithub.com%2Fcode-wheel%2Fjsonapi-frontend-astro%2Fblob%2Fmaster%2F.env.example)
+
 Astro starter template for Drupal JSON:API with [`jsonapi_frontend`](https://www.drupal.org/project/jsonapi_frontend).
 
-## Quick start
+## One-click deploy (free)
+
+Click the button above, set `DRUPAL_BASE_URL`, and deploy.
+
+## Quick start (local)
+
+1) Use this template (optional)
+
+Click the green **"Use this template"** button above, or:
+
+```bash
+gh repo create my-site --template code-wheel/jsonapi-frontend-astro
+cd my-site
+```
 
 1) Install dependencies
 

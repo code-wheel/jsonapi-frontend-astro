@@ -17,7 +17,7 @@
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
-    "@astrojs/node": "^9.4.4",
+    "@astrojs/vercel": "^9.0.2",
     "@codewheel/jsonapi-frontend-client": "^1.0.5",
     "astro": "^5.16.6",
     "isomorphic-dompurify": "^2.0.0"
