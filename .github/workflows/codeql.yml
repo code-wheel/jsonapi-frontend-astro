@@ -25,12 +25,12 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v5
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v5
+        uses: github/codeql-action/analyze@v4
         with:
           # Match GitHub's default CodeQL category so results replace older
           # "default setup" analyses and clear stale alerts.
