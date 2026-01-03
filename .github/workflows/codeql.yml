@@ -22,17 +22,16 @@ jobs:
         language: ["javascript-typescript"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v5
         with:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v5
         with:
           # Match GitHub's default CodeQL category so results replace older
           # "default setup" analyses and clear stale alerts.
           category: "/language:javascript-typescript"
-
