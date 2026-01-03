@@ -1,6 +1,6 @@
 # jsonapi-frontend-astro
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/code-wheel/jsonapi-frontend-astro&env=DRUPAL_BASE_URL&envDescription=Drupal%20origin%20URL%20(example%3A%20https%3A%2F%2Fcms.example.com)&envLink=https%3A%2F%2Fgithub.com%2Fcode-wheel%2Fjsonapi-frontend-astro%2Fblob%2Fmaster%2F.env.example)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/code-wheel/jsonapi-frontend-astro&env=DRUPAL_BASE_URL&envDescription=Drupal%20origin%20URL%20(example%3A%20https%3A%2F%2Fcms.example.com)&envLink=https%3A%2F%2Fgithub.com%2Fcode-wheel%2Fjsonapi-frontend-astro%2Fblob%2Fmaster%2F.env.example) [![CI](https://github.com/code-wheel/jsonapi-frontend-astro/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/code-wheel/jsonapi-frontend-astro/actions/workflows/ci.yml?query=branch%3Amaster) [![CodeQL](https://github.com/code-wheel/jsonapi-frontend-astro/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/code-wheel/jsonapi-frontend-astro/actions/workflows/codeql.yml?query=branch%3Amaster) [![Security Policy](https://img.shields.io/badge/security-policy-blue.svg)](SECURITY.md)
 
 Astro starter template for Drupal JSON:API with [`jsonapi_frontend`](https://www.drupal.org/project/jsonapi_frontend).
 
