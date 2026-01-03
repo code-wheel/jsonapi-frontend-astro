@@ -47,7 +47,7 @@ Open `http://localhost:4321` and navigate to any path that exists in Drupal.
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 22+
 - A Drupal 10+ site with:
   - `drupal/jsonapi_frontend` enabled
   - Core `jsonapi` enabled
@@ -58,7 +58,7 @@ Open `http://localhost:4321` and navigate to any path that exists in Drupal.
 ```
 Request: /about-us
   ↓
-Resolver: GET {DRUPAL_BASE_URL}/jsonapi/resolve?path=/about-us&_format=json
+Resolver: GET {DRUPAL_BASE_URL}/jsonapi/layout/resolve?path=/about-us&_format=json (falls back to /jsonapi/resolve)
   ↓
 Response: { kind: "entity", jsonapi_url: "/jsonapi/node/page/...", headless: true }
   ↓
@@ -66,6 +66,20 @@ Fetch: GET {DRUPAL_BASE_URL}/jsonapi/node/page/... (server-side)
   ↓
 Render (Astro SSR): /src/pages/[...slug].astro
 ```
+
+## Layout Builder (optional)
+
+If you use Drupal Layout Builder and want true headless rendering, install the add-on module:
+
+- Drupal: https://www.drupal.org/project/jsonapi_frontend_layout
+
+This starter will then call:
+
+```bash
+GET /jsonapi/layout/resolve?path=/about-us&_format=json
+```
+
+When the resolved entity is rendered with Layout Builder, the response includes a `layout` tree. This starter renders a minimal subset (field blocks only) and falls back to the normal entity renderer for everything else.
 
 ## Minimal integration (without this starter)
 

@@ -14,7 +14,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/vercel": "^9.0.2",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
+    "@playwright/test": "^1.51.1",
     "@types/dompurify": "^3.0.0",
     "typescript": "^5.0.0"
   },

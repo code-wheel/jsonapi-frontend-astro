@@ -5,6 +5,7 @@ import {
   type JsonApiDocument,
   type ResolveResponse,
 } from "@codewheel/jsonapi-frontend-client"
+import type { LayoutResolveResponse, LayoutTree } from "./layout"
 
 type DeploymentMode = "split_routing" | "nextjs_first"
 
@@ -22,10 +23,18 @@ type LoadedRoute =
       title: null
     }
   | {
-      kind: "entity" | "view"
+      kind: "entity"
       resolved: ResolveResponse
       doc: JsonApiDocument
       title: string | null
+      layout: LayoutTree | null
+    }
+  | {
+      kind: "view"
+      resolved: ResolveResponse
+      doc: JsonApiDocument
+      title: string | null
+      layout: null
     }
 
 export function getDeploymentMode(): DeploymentMode {
@@ -96,6 +105,32 @@ function guessTitle(doc: JsonApiDocument | null): string | null {
   return null
 }
 
+async function resolvePathWithLayout(
+  path: string,
+  options: { baseUrl: string; headers?: HeadersInit }
+): Promise<LayoutResolveResponse> {
+  const url = new URL("/jsonapi/layout/resolve", options.baseUrl)
+  url.searchParams.set("path", path)
+  url.searchParams.set("_format", "json")
+
+  const headers: HeadersInit = {
+    Accept: "application/vnd.api+json",
+    ...(options.headers ?? {}),
+  }
+
+  const res = await fetch(url.toString(), { headers })
+
+  if (res.status === 404) {
+    return await resolvePath(path, options)
+  }
+
+  if (!res.ok) {
+    throw new Error(`Layout resolver failed: ${res.status} ${res.statusText}`)
+  }
+
+  return (await res.json()) as LayoutResolveResponse
+}
+
 export async function loadDrupalRoute(path: string): Promise<LoadedRoute> {
   const baseUrl = getDrupalBaseUrl()
   const authHeaders = getDrupalAuthHeaders()
@@ -103,7 +138,7 @@ export async function loadDrupalRoute(path: string): Promise<LoadedRoute> {
   const headers =
     authHeaders || proxyHeaders ? { ...(authHeaders ?? {}), ...(proxyHeaders ?? {}) } : undefined
 
-  const resolved = await resolvePath(path, { baseUrl, headers })
+  const resolved = await resolvePathWithLayout(path, { baseUrl, headers })
 
   if (!resolved.resolved) {
     return { kind: "not_found", resolved, doc: null, title: null }
@@ -115,12 +150,13 @@ export async function loadDrupalRoute(path: string): Promise<LoadedRoute> {
 
   if (resolved.kind === "entity" && resolved.jsonapi_url) {
     const doc = await fetchJsonApi(resolved.jsonapi_url, { baseUrl, headers })
-    return { kind: "entity", resolved, doc, title: guessTitle(doc) }
+    const layout = resolved.kind === "entity" && "layout" in resolved ? (resolved.layout ?? null) : null
+    return { kind: "entity", resolved, doc, title: guessTitle(doc), layout }
   }
 
   if (resolved.kind === "view" && resolved.data_url) {
     const doc = await fetchView(resolved.data_url, { baseUrl, headers })
-    return { kind: "view", resolved, doc, title: guessTitle(doc) }
+    return { kind: "view", resolved, doc, title: guessTitle(doc), layout: null }
   }
 
   return { kind: "not_found", resolved, doc: null, title: null }

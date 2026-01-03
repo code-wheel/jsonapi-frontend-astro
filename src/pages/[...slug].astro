@@ -1,5 +1,6 @@
 ---
 import EntityRenderer from "../components/EntityRenderer.astro"
+import LayoutBuilderRenderer from "../components/LayoutBuilderRenderer.astro"
 import ViewRenderer from "../components/ViewRenderer.astro"
 import { getDeploymentMode, loadDrupalRoute } from "../lib/drupal"
 
@@ -71,7 +72,11 @@ if (!result.resolved.resolved) {
 	</head>
 	<body>
 		{result.kind === "entity" && result.doc && !Array.isArray(result.doc.data) ? (
-			<EntityRenderer entity={result.doc.data} included={result.doc.included} />
+			result.layout ? (
+				<LayoutBuilderRenderer layout={result.layout} entity={result.doc.data} included={result.doc.included} />
+			) : (
+				<EntityRenderer entity={result.doc.data} included={result.doc.included} />
+			)
 		) : result.kind === "view" && result.doc ? (
 			<ViewRenderer doc={result.doc} />
 		) : (

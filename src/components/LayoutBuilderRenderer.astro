@@ -1,0 +1,103 @@
+---
+import type { JsonApiResource } from "@codewheel/jsonapi-frontend-client"
+import type { LayoutComponent, LayoutTree } from "../lib/layout"
+import BodyContent from "./BodyContent.astro"
+
+interface Props {
+	layout: LayoutTree
+	entity: JsonApiResource
+	included?: JsonApiResource[]
+}
+
+const { layout, entity } = Astro.props
+
+const drupalOriginHost = (() => {
+	try {
+		return new URL(import.meta.env.DRUPAL_BASE_URL).host
+	} catch {
+		return undefined
+	}
+})()
+
+const attrs = (entity as unknown as { attributes?: Record<string, unknown> }).attributes ?? {}
+
+function byWeight(a: { weight?: number }, b: { weight?: number }): number {
+	return (a.weight ?? 0) - (b.weight ?? 0)
+}
+
+function isProcessedHtml(value: unknown): value is { processed: string } {
+	if (!value || typeof value !== "object") return false
+	const processed = (value as { processed?: unknown }).processed
+	return typeof processed === "string" && processed !== ""
+}
+
+function groupByRegion(components: LayoutComponent[]): Record<string, LayoutComponent[]> {
+	const regions: Record<string, LayoutComponent[]> = {}
+	for (const component of components) {
+		const region = component.region || "content"
+		if (!regions[region]) regions[region] = []
+		regions[region].push(component)
+	}
+	for (const region of Object.keys(regions)) {
+		regions[region].sort(byWeight)
+	}
+	return regions
+}
+
+function renderField(fieldName: string): unknown {
+	if (fieldName === "title") return attrs.title
+	return (attrs as Record<string, unknown>)[fieldName]
+}
+---
+
+<main style="max-width: 60rem; margin: 2rem auto; padding: 0 1rem; font-family: ui-sans-serif, system-ui;">
+	<header style="margin-bottom: 1.5rem;">
+		<p style="margin: 0; color: #555;">Layout Builder</p>
+		<p style="margin: 0.25rem 0 0; color: #555;">{entity.type}</p>
+	</header>
+
+	{layout.sections.map((section) => {
+		const regions = groupByRegion(section.components)
+		return (
+			<section data-layout-id={section.layout_id} style="margin: 1.5rem 0;">
+				{Object.entries(regions).map(([region, components]) => (
+					<div data-region={region} style="margin: 1rem 0;">
+						{components.map((component) => {
+							if (component.type !== "field") return null
+							const fieldName = component.field?.field_name
+							if (!fieldName) return null
+
+							if (fieldName === "title") {
+								const title = typeof attrs.title === "string" ? attrs.title : "Untitled"
+								return <h1 style="margin: 0.25rem 0 1rem;">{title}</h1>
+							}
+
+							const raw = renderField(fieldName)
+							if (raw == null) return null
+
+							if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean") {
+								return <p style="margin: 0.75rem 0;">{String(raw)}</p>
+							}
+
+							if (isProcessedHtml(raw)) {
+								return (
+									<article style="margin: 0.75rem 0;">
+										<BodyContent html={raw.processed} stripOriginHost={drupalOriginHost} />
+									</article>
+								)
+							}
+
+							return (
+								<details style="margin: 0.75rem 0;">
+									<summary>{fieldName}</summary>
+									<pre style="overflow:auto; padding: 1rem; background: #f6f6f6;">{JSON.stringify(raw, null, 2)}</pre>
+								</details>
+							)
+						})}
+					</div>
+				))}
+			</section>
+		)
+	})}
+</main>
+
