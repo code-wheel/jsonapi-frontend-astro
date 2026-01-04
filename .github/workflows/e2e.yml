@@ -1,0 +1,103 @@
+name: E2E (Drupal Demo)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 0"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      DRUPAL_BASE_URL: http://127.0.0.1:8080
+      DRUPAL_ORIGIN_URL: http://127.0.0.1:8080
+      DRUPAL_PROXY_SECRET: test-secret
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Start Drupal demo
+        run: |
+          docker compose -f demo/docker-compose.yml up -d --build
+
+          echo "Waiting for Drupal resolver…"
+          for i in $(seq 1 90); do
+            if curl -fsS "http://127.0.0.1:8080/jsonapi/resolve?path=/about-us&_format=json" | grep -q '"resolved":true'; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker compose -f demo/docker-compose.yml logs drupal
+          exit 1
+
+      - name: Run E2E (split_routing)
+        env:
+          DEPLOYMENT_MODE: split_routing
+          E2E_DEPLOYMENT_MODE: split_routing
+          EXPECT_LAYOUT: "1"
+        run: |
+          set -euo pipefail
+          npm run build
+
+          npm run preview -- --host 127.0.0.1 --port 4321 &
+          server_pid=$!
+
+          for i in $(seq 1 60); do
+            if curl -fsS "http://127.0.0.1:4321/about-us" >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          npm run test:e2e
+          kill "$server_pid"
+
+      - name: Run E2E (nextjs_first)
+        env:
+          DEPLOYMENT_MODE: nextjs_first
+          E2E_DEPLOYMENT_MODE: nextjs_first
+          EXPECT_LAYOUT: "1"
+        run: |
+          set -euo pipefail
+          npm run build
+
+          npm run preview -- --host 127.0.0.1 --port 4321 &
+          server_pid=$!
+
+          for i in $(seq 1 60); do
+            if curl -fsS "http://127.0.0.1:4321/about-us" >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          npm run test:e2e
+          kill "$server_pid"
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: ignore
+
+      - name: Shutdown demo
+        if: always()
+        run: docker compose -f demo/docker-compose.yml down -v
+

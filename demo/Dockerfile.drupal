@@ -1,0 +1,13 @@
+FROM drupal:10
+
+WORKDIR /opt/drupal
+
+# Install Drush for non-interactive site installs in demo environments.
+RUN composer require --no-interaction --no-progress --prefer-dist drush/drush:^12
+
+COPY bootstrap.sh /usr/local/bin/jsonapi-frontend-starter-bootstrap
+RUN chmod +x /usr/local/bin/jsonapi-frontend-starter-bootstrap
+
+# Run demo bootstrap (idempotent), then start Apache.
+CMD ["bash", "-lc", "/usr/local/bin/jsonapi-frontend-starter-bootstrap && apache2-foreground"]
+

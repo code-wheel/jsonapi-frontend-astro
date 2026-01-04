@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_DATABASE: drupal
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
+      MYSQL_ROOT_PASSWORD: drupal_root
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1", "-pdrupal_root"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  drupal:
+    build:
+      context: .
+      dockerfile: Dockerfile.drupal
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${DEMO_PORT:-8080}:80"
+    environment:
+      DRUPAL_DB_URL: mysql://drupal:drupal@db/drupal
+      DRUPAL_SITE_NAME: JSON:API Frontend Starter Demo
+      DRUPAL_ADMIN_USER: admin
+      DRUPAL_ADMIN_PASS: admin
+      DRUPAL_ADMIN_MAIL: admin@example.com
+      DEMO_PORT: ${DEMO_PORT:-8080}
+      DEMO_DEPLOYMENT_MODE: ${DEMO_DEPLOYMENT_MODE:-split_routing}
+      DEMO_DRUPAL_BASE_URL: ${DEMO_DRUPAL_BASE_URL:-http://127.0.0.1:8080}
+      DEMO_PROXY_SECRET: ${DEMO_PROXY_SECRET:-test-secret}
+      DEMO_ENABLE_LAYOUT: ${DEMO_ENABLE_LAYOUT:-1}
+      DEMO_ENABLE_MENU: ${DEMO_ENABLE_MENU:-1}
+      DEMO_ENABLE_WEBFORM: ${DEMO_ENABLE_WEBFORM:-1}
+      DEMO_RESOLVER_CACHE_MAX_AGE: ${DEMO_RESOLVER_CACHE_MAX_AGE:-60}
+    volumes:
+      - drupal_files:/var/www/html/sites/default/files
+
+volumes:
+  db_data:
+  drupal_files:
+
