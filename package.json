@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@astrojs/vercel": "^9.0.2",
-    "@astrojs/node": "^9.4.4",
+    "@astrojs/node": "^9.5.4",
     "@codewheel/jsonapi-frontend-client": "^1.0.7",
     "astro": "^5.16.6",
     "isomorphic-dompurify": "^2.0.0"
