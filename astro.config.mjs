@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import vercel from '@astrojs/vercel/serverless';
+import vercel from '@astrojs/vercel';
 import node from '@astrojs/node';
 
 const isVercel = Boolean(process.env.VERCEL);
