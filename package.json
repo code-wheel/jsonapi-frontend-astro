@@ -28,7 +28,7 @@
     "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.51.1",
     "@types/dompurify": "^3.0.0",
-    "@types/node": "^22.19.21",
+    "@types/node": "^25.9.3",
     "typescript": "^5.0.0"
   },
   "overrides": {
