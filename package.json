@@ -18,7 +18,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@astrojs/node": "^10.1.4",
+    "@astrojs/node": "^11.0.1",
     "@astrojs/vercel": "^10.0.8",
     "@codewheel/jsonapi-frontend-client": "^1.0.7",
     "astro": "^6.4.6",
