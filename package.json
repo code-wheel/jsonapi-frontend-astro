@@ -18,10 +18,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@astrojs/node": "^10.1.4",
-    "@astrojs/vercel": "^10.0.8",
+    "@astrojs/node": "^11.1.5",
+    "@astrojs/vercel": "^11.0.10",
     "@codewheel/jsonapi-frontend-client": "^1.0.7",
-    "astro": "^6.4.6",
+    "astro": "^7.3.2",
     "isomorphic-dompurify": "^2.0.0"
   },
   "devDependencies": {
