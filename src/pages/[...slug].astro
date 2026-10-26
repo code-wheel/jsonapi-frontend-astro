@@ -31,7 +31,11 @@ function getSafeDrupalRedirectUrl(input: string | null): string | null {
 }
 
 if (result.resolved.redirect) {
-	return Astro.redirect(result.resolved.redirect.to, result.resolved.redirect.status ?? 302)
+	// Astro 7 narrowed Astro.redirect()'s status param from `number` to a union of
+	// valid HTTP redirect codes. `redirect.status` from the client is typed `number`,
+	// so cast to that union — runtime behavior is unchanged (the cast compiles away).
+	const redirectStatus = (result.resolved.redirect.status ?? 302) as 300 | 301 | 302 | 303 | 304 | 307 | 308
+	return Astro.redirect(result.resolved.redirect.to, redirectStatus)
 }
 
 if (result.resolved.resolved && !result.resolved.headless) {
